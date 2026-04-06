@@ -31,6 +31,9 @@ services:
       - mush-logs:/game/logs
       - mush-backups:/game/backups
       - ./game/configs:/game/configs:ro
+      - ./game/modules:/game/modules:ro
+      - ./game/docs:/game/docs
+      - ./game/scripts:/game/scripts:ro
     environment:
       TZ: UTC
     logging:
@@ -51,6 +54,8 @@ services:
       context: .
       dockerfile: docker/Dockerfile.web
     restart: unless-stopped
+    ports:
+      - "3000:3000"
     depends_on:
       tinymush:
         condition: service_healthy
@@ -64,7 +69,10 @@ services:
       PORT: "3000"
       # SESSION_SECRET must be set in .env (≥ 64 random bytes); never hardcode.
       SESSION_SECRET: "${SESSION_SECRET:?SESSION_SECRET must be set in .env}"
-      ALLOWED_ORIGIN: "https://${CADDY_DOMAIN:-localhost}"
+      # COOKIE_SECURE: set to 'false' when not behind HTTPS (no Caddy). The
+      # production profile overrides this back to 'true' via Caddy TLS.
+      COOKIE_SECURE: "false"
+      ALLOWED_ORIGIN: "http://localhost:3000"
     logging:
       driver: json-file
       options:
@@ -72,6 +80,10 @@ services:
         max-file: "5"
 
   # ── Caddy TLS reverse proxy ──────────────────────────────────────────────────
+  # Only started in production profile; for local dev, access tinymush-web directly on :3000
+  # When Caddy is active, override COOKIE_SECURE and ALLOWED_ORIGIN on tinymush-web:
+  #   COOKIE_SECURE: "true"
+  #   ALLOWED_ORIGIN: "https://${CADDY_DOMAIN}"
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -94,3 +106,5 @@ services:
       options:
         max-size: 10m
         max-file: "5"
+    profiles:
+      - production

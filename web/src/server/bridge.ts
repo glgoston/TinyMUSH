@@ -35,7 +35,7 @@ function parseResizeMessage(data: Buffer): { cols: number; rows: number } | null
 /* Run the express-session middleware on a raw IncomingMessage (WebSocket
  * upgrade request) so we get req.session populated without re-parsing cookies
  * manually.  The mock response satisfies the express middleware contract. */
-function runSessionMiddleware(req: IncomingMessage): Promise<SessionData & { id: string }> {
+function runSessionMiddleware(req: IncomingMessage): Promise<string> {
     return new Promise((resolve, reject) => {
         const mockRes = {
             getHeader: () => undefined,
@@ -47,8 +47,13 @@ function runSessionMiddleware(req: IncomingMessage): Promise<SessionData & { id:
                 reject(err as Error);
                 return;
             }
-            const s = (req as any).session as SessionData & { id: string };
-            resolve(s);
+            /* After middleware, sessionID is available on req */
+            const sessionID = (req as any).sessionID as string;
+            if (!sessionID) {
+                reject(new Error('Could not extract session ID'));
+                return;
+            }
+            resolve(sessionID);
         });
     });
 }
@@ -58,13 +63,13 @@ export function attachWebSocketServer(httpServer: Server): void {
 
     wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
         runSessionMiddleware(req)
-            .then((sess) => {
+            .then((sid) => {
+                const sess = (req as any).session as SessionData;
                 if (!sess?.authenticated) {
                     ws.close(4001, 'Not authenticated');
                     return;
                 }
 
-                const sid = sess.id;
                 const tcp = socketMap.get(sid);
 
                 if (!tcp || tcp.destroyed) {

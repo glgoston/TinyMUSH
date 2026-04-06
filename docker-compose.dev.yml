@@ -21,6 +21,9 @@ services:
       - ./game/logs:/game/logs
       - ./game/backups:/game/backups
       - ./game/configs:/game/configs   # writable in dev
+      - ./game/modules:/game/modules:ro
+      - ./game/docs:/game/docs
+      - ./game/scripts:/game/scripts:ro
 
   tinymush-web:
     build:

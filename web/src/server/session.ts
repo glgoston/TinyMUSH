@@ -27,6 +27,11 @@ export function initSession(): void {
 
     sessionStore = new MemoryStore();
 
+    /* COOKIE_SECURE defaults to true only in production; set to 'false' when
+     * running without HTTPS (e.g. direct access on localhost without Caddy). */
+    const secureCookie = process.env.COOKIE_SECURE !== 'false'
+        && process.env.NODE_ENV === 'production';
+
     sessionMiddleware = session({
         secret,
         store: sessionStore,
@@ -36,7 +41,7 @@ export function initSession(): void {
         cookie: {
             httpOnly: true,
             sameSite: 'strict',
-            secure: process.env.NODE_ENV === 'production',
+            secure: secureCookie,
             maxAge: 24 * 60 * 60 * 1000,   /* 24 hours */
         },
     });
