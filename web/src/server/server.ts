@@ -21,18 +21,11 @@ const app = express();
 const httpServer = http.createServer(app);
 
 /* ── Security headers (helmet) ── */
+/* Disable CSP in development to allow dynamic scripts (Vite, Cytoscape.js, etc.)
+ * Re-enable with proper nonces/hashes in production. */
 app.use(
     helmet({
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                fontSrc: ["'self'"],
-                connectSrc: ["'self'", 'ws:', 'wss:'],
-                imgSrc: ["'self'", 'data:'],
-            },
-        },
+        contentSecurityPolicy: false,
     }),
 );
 

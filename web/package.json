@@ -11,6 +11,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@types/cytoscape": "^3.21.9",
+    "cytoscape": "^3.33.1",
     "express": "^4.19.2",
     "express-rate-limit": "^7.3.1",
     "express-session": "^1.18.0",

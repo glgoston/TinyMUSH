@@ -16,6 +16,7 @@ export interface PlayerEntry {
 
 export interface RoomInfo {
     name: string;
+    dbref?: string;   /* numeric string extracted from room-name line when available */
     exits: string[];
 }
 
@@ -94,10 +95,18 @@ export function feedRoomData(raw: string, onUpdate: (info: RoomInfo) => void): v
         if (exitMatch) {
             /* Look backward for the room name */
             let roomName = '';
+            let roomDbref: string | undefined;
             for (let j = i - 1; j >= 0 && j >= i - 5; j--) {
                 const candidate = lines[j].replace(/\x1b\[[0-9;]*[mGKHFABCDJ]/g, '').trim();
                 if (candidate && !/^[a-z]/.test(candidate) && candidate.length < 80) {
-                    roomName = candidate;
+                    /* MUSH may append "(#NNNN)" or "[#NNNN Rf]" to the room name */
+                    const dbrefMatch = candidate.match(/\(#(\d+)/) ?? candidate.match(/#(\d+)/);
+                    if (dbrefMatch) {
+                        roomDbref = dbrefMatch[1];
+                    }
+                    /* Strip the dbref/flag suffix for the display name */
+                    roomName = candidate.replace(/\s*[\[(][^)\]]*[)\]].*$/, '').trim();
+                    if (!roomName) roomName = candidate;
                     break;
                 }
             }
@@ -107,7 +116,7 @@ export function feedRoomData(raw: string, onUpdate: (info: RoomInfo) => void): v
                 .filter(Boolean);
 
             if (roomName || exits.length > 0) {
-                onUpdate({ name: roomName, exits });
+                onUpdate({ name: roomName, dbref: roomDbref, exits });
             }
         }
     }
@@ -132,8 +141,9 @@ export function renderWhoPanel(el: HTMLElement, players: PlayerEntry[]): void {
 }
 
 export function renderRoomPanel(el: HTMLElement, info: RoomInfo): void {
+    const dbrefSuffix = info.dbref ? ` <span style="color:var(--text-dim);font-size:.7rem">(#${escHtml(info.dbref)})</span>` : '';
     const name = info.name
-        ? `<div style="margin-bottom:.4rem;font-weight:bold">${escHtml(info.name)}</div>`
+        ? `<div style="margin-bottom:.4rem;font-weight:bold">${escHtml(info.name)}${dbrefSuffix}</div>`
         : '';
     const exits =
         info.exits.length > 0

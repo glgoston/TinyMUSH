@@ -9,6 +9,13 @@ import {
     PlayerEntry,
     RoomInfo,
 } from './panels';
+import {
+    initConstruction,
+    checkCapability,
+    onTerminalLine  as constructionOnLine,
+    onRoomUpdate    as constructionOnRoom,
+    onCommandSent   as constructionOnCmd,
+} from './construction/index';
 
 /* ── DOM elements ── */
 const loginOverlay  = document.getElementById('login-overlay')!;
@@ -19,10 +26,13 @@ const loginError    = document.getElementById('login-error')!;
 const app           = document.getElementById('app')!;
 const topbarUser    = document.getElementById('topbar-user')!;
 const logoutBtn     = document.getElementById('logout-btn')   as HTMLButtonElement;
+const buildBtn      = document.getElementById('build-btn')    as HTMLButtonElement;
 const statusDot     = document.getElementById('status-dot')!;
 const termWrapper   = document.getElementById('terminal-wrapper')!;
 const whoPanel      = document.getElementById('who-panel')!;
 const roomPanel     = document.getElementById('room-panel')!;
+const playPanels    = document.getElementById('play-panels')!;
+const buildPanels   = document.getElementById('build-panels')!;
 const cmdInput      = document.getElementById('cmd-input')    as HTMLInputElement;
 const sendBtn       = document.getElementById('send-btn')     as HTMLButtonElement;
 
@@ -71,6 +81,9 @@ function connectWS(username: string): void {
         if (term) {
             ws!.send(makeResizeMsg(term.cols, term.rows));
         }
+
+        /* Probe whether the character has builder/wizard privileges */
+        checkCapability(sendCommand);
     };
 
     ws.onclose = (ev) => {
@@ -96,7 +109,14 @@ function connectWS(username: string): void {
 
         /* Feed side-panel parsers */
         feedWhoData(text, (players: PlayerEntry[]) => renderWhoPanel(whoPanel, players));
-        feedRoomData(text, (info: RoomInfo) => renderRoomPanel(roomPanel, info));
+        feedRoomData(text, (info: RoomInfo) => {
+            renderRoomPanel(roomPanel, info);
+            constructionOnRoom(info);
+        });
+
+        /* Fan each line to the construction module for capability detection
+         * and room-creation confirmations */
+        text.split('\n').forEach((line) => constructionOnLine(line));
     };
 }
 
@@ -109,6 +129,7 @@ function sendCommand(cmd: string): void {
     if (!ws || ws.readyState !== WebSocket.OPEN) return;
     const line = cmd.endsWith('\r\n') ? cmd : cmd + '\r\n';
     ws.send(new TextEncoder().encode(line));
+    constructionOnCmd(cmd);
 }
 
 /* ── Input bar ── */
@@ -192,6 +213,10 @@ async function doLogin(): Promise<void> {
 
         setupInputBar();
         connectWS(username);
+
+        /* Wire construction mode (hidden until capability confirmed) */
+        console.log('[Init] Initializing construction mode');
+        initConstruction(sendCommand, { buildBtn, playPanels, buildPanels });
 
     } finally {
         loginBtn.disabled = false;

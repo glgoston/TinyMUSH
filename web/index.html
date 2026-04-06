@@ -267,6 +267,189 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    /* ── Utility ── */
+    .hidden { display: none !important; }
+
+    /* ── Build toggle button ── */
+    #build-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: .75rem;
+      padding: .2rem .6rem;
+      margin-right: .4rem;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    #build-btn:hover { color: var(--accent); border-color: var(--accent); }
+    #build-btn.active {
+      background: rgba(0,184,148,.15);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* ── Construction side pane ── */
+    #build-panels {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    /* Tab bar */
+    .build-tab-bar {
+      display: flex;
+      flex-shrink: 0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .build-tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      letter-spacing: .06em;
+      padding: .35rem .25rem;
+      text-transform: uppercase;
+      transition: color .15s, border-color .15s;
+    }
+    .build-tab-btn:hover { color: var(--text); }
+    .build-tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Map controls bar */
+    .build-map-controls {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .3rem .5rem;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .build-map-controls label {
+      font-size: .7rem;
+      color: var(--text-dim);
+    }
+    .build-map-controls input[type=range] { flex: 1; min-width: 60px; max-width: 100px; }
+    .build-map-controls span { font-size: .72rem; color: var(--accent); min-width: 1.2rem; }
+
+    /* Tab content areas */
+    .build-tab-content {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    #build-tab-map {
+      /* Cytoscape fills this */
+      background: #080e08;
+    }
+    #build-tab-rooms,
+    #build-tab-exits {
+      overflow-y: auto;
+      padding: .5rem .6rem;
+      font-family: var(--font-ui);
+      font-size: .8rem;
+    }
+
+    /* ── Shared form styles (room-form + exit-manager) ── */
+    .rf-wrap { padding: .4rem .2rem; }
+    .rf-section-title {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      color: var(--accent);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: .4rem;
+    }
+    .rf-current-room, .em-room-name { color: var(--text); font-size: .82rem; margin-bottom: .5rem; }
+    .rf-dim { color: var(--text-dim); }
+    .rf-form { display: flex; flex-direction: column; gap: .4rem; }
+    .rf-label {
+      font-size: .68rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: .1rem;
+    }
+    .rf-req { color: var(--accent); }
+    .rf-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: .8rem;
+      padding: .35rem .55rem;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .rf-input:focus { border-color: var(--accent); }
+    .rf-textarea { resize: vertical; min-height: 52px; }
+    .rf-row { display: flex; gap: .5rem; }
+    .rf-col { flex: 1; display: flex; flex-direction: column; }
+    .rf-check-row {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .78rem;
+      color: var(--text-dim);
+    }
+    .rf-actions { display: flex; gap: .5rem; margin-top: .3rem; }
+    .rf-btn {
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: .75rem;
+      padding: .3rem .65rem;
+      transition: background .15s, color .15s, border-color .15s;
+      border: 1px solid transparent;
+    }
+    .rf-btn-primary {
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      border-color: var(--accent);
+    }
+    .rf-btn-primary:hover { background: #00d2a8; border-color: #00d2a8; }
+    .rf-btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+    .rf-btn-ghost:hover { color: var(--text); border-color: var(--text-dim); }
+    .rf-quick { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .3rem; }
+    .rf-quick-btn { font-size: .7rem !important; padding: .2rem .5rem !important; }
+    .rf-status { font-size: .75rem; margin-top: .3rem; min-height: 1.2em; }
+    .rf-status-ok      { color: var(--accent); }
+    .rf-status-pending { color: var(--warn); }
+
+    /* Exit Manager table */
+    .em-table { width: 100%; border-collapse: collapse; font-size: .78rem; margin-bottom: .5rem; }
+    .em-table th {
+      font-size: .65rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      text-align: left;
+      padding: .25rem .3rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .em-table td { padding: .3rem .3rem; border-bottom: 1px solid rgba(255,255,255,.04); vertical-align: middle; }
+    .em-exit-name { color: var(--text); font-family: var(--font-mono); font-size: .78rem; }
+    .em-empty { color: var(--text-dim); font-style: italic; text-align: center; padding: .6rem 0; }
+    .em-actions { display: flex; gap: .3rem; }
   </style>
 </head>
 <body>
@@ -292,7 +475,10 @@
         <span id="status-dot"></span>TinyMUSH
       </span>
       <span id="topbar-user"></span>
-      <button id="logout-btn">Disconnect</button>
+      <div style="display:flex;align-items:center;gap:.3rem">
+        <button id="build-btn" class="hidden" title="Toggle construction mode">⚒ Build</button>
+        <button id="logout-btn">Disconnect</button>
+      </div>
     </div>
 
     <div id="split-container">
@@ -303,18 +489,51 @@
       </div>
 
       <div id="side-pane">
-        <div class="panel" style="flex: 1">
-          <div class="panel-header">Who's online</div>
-          <div class="panel-body" id="who-panel">
-            <span class="dim">—</span>
+
+        <!-- ── Play panels (default) ── -->
+        <div id="play-panels" style="display:flex;flex-direction:column;height:100%;overflow:hidden">
+          <div class="panel" style="flex: 1">
+            <div class="panel-header">Who's online</div>
+            <div class="panel-body" id="who-panel">
+              <span class="dim">—</span>
+            </div>
+          </div>
+          <div class="panel" style="flex: 1">
+            <div class="panel-header">Location</div>
+            <div class="panel-body" id="room-panel">
+              <span class="dim">—</span>
+            </div>
           </div>
         </div>
-        <div class="panel" style="flex: 1">
-          <div class="panel-header">Location</div>
-          <div class="panel-body" id="room-panel">
-            <span class="dim">—</span>
+
+        <!-- ── Construction panels ── -->
+        <div id="build-panels" class="hidden">
+          <!-- Tab bar -->
+          <div class="build-tab-bar">
+            <button class="build-tab-btn active" data-tab="map">Map</button>
+            <button class="build-tab-btn" data-tab="rooms">Rooms</button>
+            <button class="build-tab-btn" data-tab="exits">Exits</button>
           </div>
+
+          <!-- Map controls -->
+          <div class="build-map-controls build-tab-content-header">
+            <label for="build-depth">Depth</label>
+            <input id="build-depth" type="range" min="1" max="10" value="3" />
+            <span id="build-depth-label">3</span>
+            <button id="build-map-fit"  class="rf-btn rf-btn-ghost" style="font-size:.7rem;padding:.15rem .45rem" title="Fit map">⊞ Fit</button>
+            <button id="build-map-clear" class="rf-btn rf-btn-ghost" style="font-size:.7rem;padding:.15rem .45rem;color:var(--error)" title="Clear map">✕ Clear</button>
+          </div>
+
+          <!-- Tab: Map -->
+          <div id="build-tab-map" class="build-tab-content"></div>
+
+          <!-- Tab: Rooms -->
+          <div id="build-tab-rooms" class="build-tab-content hidden"></div>
+
+          <!-- Tab: Exits -->
+          <div id="build-tab-exits" class="build-tab-content hidden"></div>
         </div>
+
       </div>
     </div>
 
