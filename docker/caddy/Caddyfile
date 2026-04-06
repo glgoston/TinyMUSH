@@ -1,0 +1,16 @@
+# Caddyfile for TinyMUSH production deployment.
+# Caddy automatically provisions and renews TLS certificates via Let's Encrypt.
+#
+# Environment variables (set in docker-compose.yml):
+#   CADDY_DOMAIN  — public domain, e.g. mush.example.com
+#   CADDY_EMAIL   — ACME account email
+
+{
+    email {$CADDY_EMAIL}
+}
+
+{$CADDY_DOMAIN} {
+    # Proxy all HTTP and WebSocket traffic to the web layer.
+    # Caddy handles the Upgrade header automatically.
+    reverse_proxy tinymush-web:3000
+}

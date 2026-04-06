@@ -126,7 +126,7 @@ void init_cmdtab(void)
 		cp->pre_hook = NULL;
 		cp->post_hook = NULL;
 		cp->userperms = NULL;
-		cp->info.handler = do_setattr; /* All attribute setters use same handler */
+		cp->info.handler = (void (*)())do_setattr; /* All attribute setters use same handler */
 
 		/* Add primary command to hash table; if collision occurs, free the duplicate */
 		if (hashadd(cp->cmdname, (int *)cp, &mushstate.command_htab, 0))
@@ -359,7 +359,7 @@ void process_cmdent(CMDENT *cmdp, char *switchp, dbref player, dbref cause, bool
 	{
 	case CS_NO_ARGS: /* Commands with no arguments (e.g., WHO, QUIT, INVENTORY) */
 	{
-		handler_cs_no_args = cmdp->info.handler;
+		handler_cs_no_args = (handler_cs_no_args_t)cmdp->info.handler;
 		(*handler_cs_no_args)(player, cause, key);
 		break;
 	}
@@ -368,7 +368,7 @@ void process_cmdent(CMDENT *cmdp, char *switchp, dbref player, dbref cause, bool
 		/* Handle unparsed commands (raw text passed directly to handler) */
 		if (cmdp->callseq & CS_UNPARSE)
 		{
-			handler_cs_one_args_unparse = cmdp->info.handler;
+			handler_cs_one_args_unparse = (handler_cs_one_args_unparse_t)cmdp->info.handler;
 			(*handler_cs_one_args_unparse)(player, unp_command);
 			break;
 		}
@@ -393,7 +393,7 @@ void process_cmdent(CMDENT *cmdp, char *switchp, dbref player, dbref cause, bool
 		if (cmdp->callseq & CS_CMDARG)
 		{
 			/* Pass original command arguments (%0-%9) to handler */
-			handler_cs_one_args_cmdargs = cmdp->info.handler;
+			handler_cs_one_args_cmdargs = (handler_cs_one_args_cmdargs_t)cmdp->info.handler;
 			(*handler_cs_one_args_cmdargs)(player, cause, key, buf1, cargs, ncargs);
 		}
 		else if (cmdp->callseq & CS_ADDED)
@@ -538,7 +538,7 @@ void process_cmdent(CMDENT *cmdp, char *switchp, dbref player, dbref cause, bool
 		else
 		{
 			/* Standard one-argument command handler */
-			handler_cs_one_args = cmdp->info.handler;
+			handler_cs_one_args = (handler_cs_one_args_t)cmdp->info.handler;
 			(*handler_cs_one_args)(player, cause, key, buf1);
 		}
 
@@ -581,13 +581,13 @@ void process_cmdent(CMDENT *cmdp, char *switchp, dbref player, dbref cause, bool
 			/* Dispatch to handler with or without cmdargs */
 			if (cmdp->callseq & CS_CMDARG)
 			{
-				handler_cs_two_args_cmdargs_argv = cmdp->info.handler;
+				handler_cs_two_args_cmdargs_argv = (handler_cs_two_args_cmdargs_argv_t)cmdp->info.handler;
 				(*handler_cs_two_args_cmdargs_argv)(player, cause, key, buf1, args, nargs,
 													cargs, ncargs);
 			}
 			else
 			{
-				handler_cs_two_args_argv = cmdp->info.handler;
+				handler_cs_two_args_argv = (handler_cs_two_args_argv_t)cmdp->info.handler;
 				(*handler_cs_two_args_argv)(player, cause, key, buf1, args, nargs);
 			}
 
@@ -623,12 +623,12 @@ void process_cmdent(CMDENT *cmdp, char *switchp, dbref player, dbref cause, bool
 			/* Dispatch to handler with or without cmdargs */
 			if (cmdp->callseq & CS_CMDARG)
 			{
-				handler_cs_two_args_cmdargs = cmdp->info.handler;
+				handler_cs_two_args_cmdargs = (handler_cs_two_args_cmdargs_t)cmdp->info.handler;
 				(*handler_cs_two_args_cmdargs)(player, cause, key, buf1, buf2, cargs, ncargs);
 			}
 			else
 			{
-				handler_cs_two_args = cmdp->info.handler;
+				handler_cs_two_args = (handler_cs_two_args_t)cmdp->info.handler;
 				(*handler_cs_two_args)(player, cause, key, buf1, buf2);
 			}
 

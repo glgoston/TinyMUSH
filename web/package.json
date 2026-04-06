@@ -1,0 +1,35 @@
+{
+  "name": "tinymush-web",
+  "version": "1.0.0",
+  "description": "TinyMUSH web interface — WebSocket proxy and browser TUI",
+  "type": "commonjs",
+  "main": "dist/server/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.server.json && vite build",
+    "dev": "concurrently -k -n server,client -c cyan,yellow \"tsx watch src/server/server.ts\" \"vite\"",
+    "start": "node dist/server/server.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "ws": "^8.17.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.18.0",
+    "@types/node": "^20.14.2",
+    "@types/ws": "^8.5.10",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/addon-unicode11": "^0.8.0",
+    "@xterm/addon-web-links": "^0.11.0",
+    "@xterm/xterm": "^5.5.0",
+    "concurrently": "^8.2.2",
+    "split.js": "^1.6.5",
+    "tsx": "^4.15.5",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.13"
+  }
+}

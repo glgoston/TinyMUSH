@@ -1,0 +1,42 @@
+# Development overrides for docker-compose.yml
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Differences from production:
+#   - Port 6250 exposed on host for direct Telnet debugging
+#   - Game configs mounted read-write
+#   - Web layer uses the dev image with hot-reload (tsx watch + vite dev)
+#   - Caddy is disabled (access the web UI directly on port 3000)
+
+name: tinymush
+
+services:
+
+  tinymush:
+    ports:
+      - "6250:6250"       # Expose Telnet port for direct debugging
+    volumes:
+      - ./game/db:/game/db
+      - ./game/logs:/game/logs
+      - ./game/backups:/game/backups
+      - ./game/configs:/game/configs   # writable in dev
+
+  tinymush-web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web.dev
+    ports:
+      - "3000:3000"       # Node/Express server
+      - "5173:5173"       # Vite dev server (HMR)
+    environment:
+      NODE_ENV: development
+      ALLOWED_ORIGIN: "*"
+    volumes:
+      - ./web:/app
+      - /app/node_modules  # Prevent host node_modules from overwriting container's
+
+  caddy:
+    # Caddy is not needed in development — access the app directly on :3000
+    profiles:
+      - production

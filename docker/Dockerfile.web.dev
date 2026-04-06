@@ -1,0 +1,14 @@
+# Development web image — mounts the source tree for hot-reload via tsx watch + vite dev.
+FROM node:20-alpine
+
+RUN addgroup -S mush && adduser -S mush -G mush
+
+WORKDIR /app
+COPY web/package*.json ./
+RUN npm ci
+
+USER mush
+EXPOSE 3000 5173
+
+# concurrently starts both the Vite dev server and tsx watch for the Node server.
+CMD ["npm", "run", "dev"]

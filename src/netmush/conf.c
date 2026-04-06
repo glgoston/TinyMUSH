@@ -111,7 +111,7 @@ CF_Result cf_add_helpfile(dbref player, char *confcmd, char *str, bool is_raw)
 	cmdp->post_hook = NULL;
 	cmdp->userperms = NULL;
 	cmdp->callseq = CS_ONE_ARG;
-	cmdp->info.handler = do_help;
+	cmdp->info.handler = (void (*)())do_help;
 	cmdp->extra = mushstate.helpfiles;
 
 	if (is_raw)

@@ -81,6 +81,13 @@ env/
 .venv/
 .env/
 
+# Docker environment secrets — copy .env.example and fill in values
+.env
+
+# Node.js web layer build artefacts
+web/dist/
+web/node_modules/
+
 # Python cache
 __pycache__/
 *.pyc

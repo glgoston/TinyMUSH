@@ -2098,19 +2098,19 @@ NAMETAB cwho_sw[] = {
     {NULL, 0, 0, 0}};
 
 CMDENT mod_comsys_cmdtable[] = {
-    {(char *)"@cboot", cboot_sw, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_TWO_ARG, NULL, NULL, NULL, {do_cboot}},
-    {(char *)"@ccreate", NULL, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_ONE_ARG, NULL, NULL, NULL, {do_ccreate}},
-    {(char *)"@cdestroy", NULL, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_ONE_ARG, NULL, NULL, NULL, {do_cdestroy}},
-    {(char *)"@cemit", cemit_sw, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_TWO_ARG, NULL, NULL, NULL, {do_cemit}},
-    {(char *)"@channel", channel_sw, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_TWO_ARG | CS_INTERP, NULL, NULL, NULL, {do_channel}},
-    {(char *)"@clist", clist_sw, CA_NO_SLAVE, 0, CS_ONE_ARG, NULL, NULL, NULL, {do_clist}},
-    {(char *)"@cwho", cwho_sw, CA_NO_SLAVE, 0, CS_ONE_ARG, NULL, NULL, NULL, {do_cwho}},
-    {(char *)"addcom", NULL, CA_NO_SLAVE, 0, CS_TWO_ARG | CS_ARGV, NULL, NULL, NULL, {do_addcom}},
-    {(char *)"allcom", NULL, CA_NO_SLAVE, 0, CS_ONE_ARG, NULL, NULL, NULL, {do_allcom}},
-    {(char *)"comlist", NULL, CA_NO_SLAVE, 0, CS_NO_ARGS, NULL, NULL, NULL, {do_comlist}},
-    {(char *)"comtitle", NULL, CA_NO_SLAVE, 0, CS_TWO_ARG, NULL, NULL, NULL, {do_comtitle}},
-    {(char *)"clearcom", NULL, CA_NO_SLAVE, 0, CS_NO_ARGS, NULL, NULL, NULL, {do_clearcom}},
-    {(char *)"delcom", NULL, CA_NO_SLAVE, 0, CS_ONE_ARG, NULL, NULL, NULL, {do_delcom}},
+    {(char *)"@cboot", cboot_sw, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_TWO_ARG, NULL, NULL, NULL, {(void (*)())do_cboot}},
+    {(char *)"@ccreate", NULL, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_ONE_ARG, NULL, NULL, NULL, {(void (*)())do_ccreate}},
+    {(char *)"@cdestroy", NULL, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_ONE_ARG, NULL, NULL, NULL, {(void (*)())do_cdestroy}},
+    {(char *)"@cemit", cemit_sw, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_TWO_ARG, NULL, NULL, NULL, {(void (*)())do_cemit}},
+    {(char *)"@channel", channel_sw, CA_NO_SLAVE | CA_NO_GUEST, 0, CS_TWO_ARG | CS_INTERP, NULL, NULL, NULL, {(void (*)())do_channel}},
+    {(char *)"@clist", clist_sw, CA_NO_SLAVE, 0, CS_ONE_ARG, NULL, NULL, NULL, {(void (*)())do_clist}},
+    {(char *)"@cwho", cwho_sw, CA_NO_SLAVE, 0, CS_ONE_ARG, NULL, NULL, NULL, {(void (*)())do_cwho}},
+    {(char *)"addcom", NULL, CA_NO_SLAVE, 0, CS_TWO_ARG | CS_ARGV, NULL, NULL, NULL, {(void (*)())do_addcom}},
+    {(char *)"allcom", NULL, CA_NO_SLAVE, 0, CS_ONE_ARG, NULL, NULL, NULL, {(void (*)())do_allcom}},
+    {(char *)"comlist", NULL, CA_NO_SLAVE, 0, CS_NO_ARGS, NULL, NULL, NULL, {(void (*)())do_comlist}},
+    {(char *)"comtitle", NULL, CA_NO_SLAVE, 0, CS_TWO_ARG, NULL, NULL, NULL, {(void (*)())do_comtitle}},
+    {(char *)"clearcom", NULL, CA_NO_SLAVE, 0, CS_NO_ARGS, NULL, NULL, NULL, {(void (*)())do_clearcom}},
+    {(char *)"delcom", NULL, CA_NO_SLAVE, 0, CS_ONE_ARG, NULL, NULL, NULL, {(void (*)())do_delcom}},
     {(char *)NULL, NULL, 0, 0, 0, NULL, NULL, NULL, {NULL}}};
 
 /* --------------------------------------------------------------------------

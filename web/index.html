@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TinyMUSH</title>
+  <script type="module" src="/src/client/main.ts"></script>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0a;
+      --bg-panel:  #111111;
+      --bg-input:  #0d1117;
+      --border:    #2a2a2a;
+      --accent:    #00b894;
+      --accent-dim:#005f4e;
+      --text:      #c9d1d9;
+      --text-dim:  #586069;
+      --error:     #ff4757;
+      --warn:      #ffa502;
+      --radius:    4px;
+      --font-mono: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', 'DejaVu Sans Mono', 'Courier New', monospace;
+      --font-ui:   system-ui, -apple-system, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+    }
+
+    /* ── Login overlay ── */
+    #login-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.88);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+    }
+    #login-overlay.hidden { display: none; }
+
+    #login-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 2.5rem;
+      width: min(90vw, 380px);
+    }
+    #login-box h1 {
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      letter-spacing: .05em;
+    }
+    #login-box label {
+      display: block;
+      font-size: .78rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: .3rem;
+    }
+    #login-box input {
+      display: block;
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: .9rem;
+      padding: .5rem .75rem;
+      margin-bottom: 1rem;
+      outline: none;
+      transition: border-color .15s;
+    }
+    #login-box input:focus { border-color: var(--accent); }
+    #login-btn {
+      width: 100%;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #000;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: .9rem;
+      font-weight: 700;
+      padding: .6rem;
+      letter-spacing: .05em;
+      transition: background .15s;
+    }
+    #login-btn:hover  { background: #00d2a8; }
+    #login-btn:active { background: var(--accent-dim); color: var(--text); }
+    #login-btn:disabled { opacity: .5; cursor: not-allowed; }
+    #login-error {
+      font-size: .82rem;
+      color: var(--error);
+      margin-top: .75rem;
+      min-height: 1.2em;
+      text-align: center;
+    }
+
+    /* ── App shell (hidden until login succeeds) ── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    #app.hidden { display: none; }
+
+    /* Top bar */
+    #topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      padding: .3rem .75rem;
+      flex-shrink: 0;
+    }
+    #topbar-title {
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      color: var(--accent);
+      letter-spacing: .08em;
+    }
+    #topbar-user { font-size: .8rem; color: var(--text-dim); }
+    #logout-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: .75rem;
+      padding: .2rem .6rem;
+      transition: color .15s, border-color .15s;
+    }
+    #logout-btn:hover { color: var(--error); border-color: var(--error); }
+
+    /* Split container */
+    #split-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Terminal pane */
+    #terminal-pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #0d0d0d;
+    }
+    #terminal-wrapper {
+      flex: 1;
+      overflow: hidden;
+      padding: 4px;
+    }
+    .xterm { height: 100%; }
+    .xterm-viewport { overflow-y: auto !important; }
+
+    /* Split gutter */
+    .gutter {
+      background: var(--border);
+      cursor: col-resize;
+      flex-shrink: 0;
+      width: 4px;
+      transition: background .15s;
+    }
+    .gutter:hover { background: var(--accent-dim); }
+
+    /* Side panel pane */
+    #side-pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-panel);
+      border-left: 1px solid var(--border);
+    }
+
+    .panel {
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-header {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--accent);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .35rem .75rem;
+      background: rgba(0,184,148,.06);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .panel-body {
+      overflow-y: auto;
+      flex: 1;
+      padding: .5rem .75rem;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      line-height: 1.55;
+      color: var(--text);
+    }
+    .panel-body .dim { color: var(--text-dim); }
+    .panel-body .player-row { display: flex; justify-content: space-between; }
+    .panel-body .player-name { color: var(--text); }
+    .panel-body .player-idle { color: var(--text-dim); font-size: .72rem; }
+
+    /* Status dot */
+    #status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      display: inline-block;
+      margin-right: .4rem;
+      transition: background .3s;
+    }
+    #status-dot.connected    { background: var(--accent); box-shadow: 0 0 4px var(--accent); }
+    #status-dot.disconnected { background: var(--error); }
+
+    /* Input bar */
+    #input-bar {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--bg-input);
+      border-top: 1px solid var(--border);
+      padding: .4rem .6rem;
+      flex-shrink: 0;
+    }
+    #cmd-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: .88rem;
+      outline: none;
+      caret-color: var(--accent);
+    }
+    #cmd-input::placeholder { color: var(--text-dim); }
+    #send-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #000;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      font-weight: 700;
+      padding: .35rem .8rem;
+      transition: background .15s;
+    }
+    #send-btn:hover { background: #00d2a8; }
+    #send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+  <!-- ── Login overlay ── -->
+  <div id="login-overlay">
+    <div id="login-box">
+      <h1>⬡ TinyMUSH</h1>
+      <label for="login-user">Character name</label>
+      <input id="login-user" type="text" autocomplete="username" placeholder="Wizard" />
+      <label for="login-pass">Password</label>
+      <input id="login-pass" type="password" autocomplete="current-password" placeholder="••••••••" />
+      <button id="login-btn">Connect</button>
+      <div id="login-error"></div>
+    </div>
+  </div>
+
+  <!-- ── Main app shell ── -->
+  <div id="app" class="hidden">
+
+    <div id="topbar">
+      <span id="topbar-title">
+        <span id="status-dot"></span>TinyMUSH
+      </span>
+      <span id="topbar-user"></span>
+      <button id="logout-btn">Disconnect</button>
+    </div>
+
+    <div id="split-container">
+      <div id="terminal-pane">
+        <div id="terminal-wrapper">
+          <!-- xterm.js mounts here -->
+        </div>
+      </div>
+
+      <div id="side-pane">
+        <div class="panel" style="flex: 1">
+          <div class="panel-header">Who's online</div>
+          <div class="panel-body" id="who-panel">
+            <span class="dim">—</span>
+          </div>
+        </div>
+        <div class="panel" style="flex: 1">
+          <div class="panel-header">Location</div>
+          <div class="panel-body" id="room-panel">
+            <span class="dim">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="input-bar">
+      <input id="cmd-input" type="text" placeholder="Type a command and press Enter…" autocomplete="off" spellcheck="false" />
+      <button id="send-btn">↵ Send</button>
+    </div>
+
+  </div>
+
+</body>
+</html>

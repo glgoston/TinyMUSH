@@ -1,0 +1,96 @@
+name: tinymush
+
+networks:
+  # Internal bridge — the game engine is NEVER directly reachable from the host.
+  tinymush-net:
+    driver: bridge
+    internal: true
+  # External bridge — only the web proxy and Caddy sit on this network.
+  web-net:
+    driver: bridge
+
+volumes:
+  mush-db:
+  mush-logs:
+  mush-backups:
+  caddy-data:
+  caddy-config:
+
+services:
+
+  # ── TinyMUSH game engine ─────────────────────────────────────────────────────
+  tinymush:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.game
+    restart: unless-stopped
+    networks:
+      - tinymush-net        # Internal only — port 6250 NOT published to host
+    volumes:
+      - mush-db:/game/db
+      - mush-logs:/game/logs
+      - mush-backups:/game/backups
+      - ./game/configs:/game/configs:ro
+    environment:
+      TZ: UTC
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "6250"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── WebSocket proxy + frontend SPA ──────────────────────────────────────────
+  tinymush-web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    restart: unless-stopped
+    depends_on:
+      tinymush:
+        condition: service_healthy
+    networks:
+      - tinymush-net    # Can reach the MUSH engine on port 6250
+      - web-net         # Reachable from Caddy
+    environment:
+      NODE_ENV: production
+      MUSH_HOST: tinymush
+      MUSH_PORT: "6250"
+      PORT: "3000"
+      # SESSION_SECRET must be set in .env (≥ 64 random bytes); never hardcode.
+      SESSION_SECRET: "${SESSION_SECRET:?SESSION_SECRET must be set in .env}"
+      ALLOWED_ORIGIN: "https://${CADDY_DOMAIN:-localhost}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  # ── Caddy TLS reverse proxy ──────────────────────────────────────────────────
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - web-net
+    depends_on:
+      - tinymush-web
+    environment:
+      CADDY_EMAIL: "${CADDY_EMAIL:-webmaster@localhost}"
+      CADDY_DOMAIN: "${CADDY_DOMAIN:-localhost}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"

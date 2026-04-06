@@ -1,0 +1,28 @@
+# ─── Stage 1: Build (installs all deps including devDeps for the Vite build) ──
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+COPY web/package*.json ./
+RUN npm ci
+
+COPY web/ .
+# Build: compile server TypeScript + bundle the browser SPA
+RUN npm run build
+
+# ─── Stage 2: Runtime (production deps only) ───────────────────────────────────
+FROM node:20-alpine AS runtime
+
+RUN addgroup -S mush && adduser -S mush -G mush
+
+WORKDIR /app
+
+# Production dependencies only
+COPY web/package*.json ./
+RUN npm ci --omit=dev
+
+# Copy compiled artefacts from builder
+COPY --from=builder /app/dist ./dist
+
+USER mush
+EXPOSE 3000
+CMD ["node", "dist/server/server.js"]
